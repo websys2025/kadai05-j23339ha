@@ -4,9 +4,9 @@
     <title>演習課題5-2：外部APIの呼び出しテスト</title>
 </head>
 <body>
-    <h1 id="msg">何かのAPI</h1>
+    <h1 id="msg">天気情報のAPI</h1>
     <form name="apiform"><p>
-        何かのフォーム：<input type="text" name="form_data">
+        地名を入力：<input type="text" name="form_data">
         <button type="button" id="btn1" onclick="some_api(this.form)">実行</button>
     </p></form>
     
@@ -14,7 +14,30 @@
     <script>
         async function some_api(myForm) {
             // ここにコードを書く
-            document.getElementById("result").innerHTML += myForm.form_data.value+"<br />";
+            const city = myForm.form_data.value.trim();
+            if (!city) {
+                document.getElementById("result").innerHTML += "地名を入力してください<br />";
+                return;
+            }
+
+            const url = `https://wttr.in/${encodeURIComponent(city)}?format=j1`;
+            const response = await fetch(url);
+
+            if (response.ok) {
+                const data = await response.json();
+                const weather = data.current_condition[0];
+                const output = `
+                    <strong>${city} の現在の天気:</strong><br />
+                    天気: ${weather.weatherDesc[0].value}<br />
+                    気温: ${weather.temp_C}℃<br />
+                    体感温度: ${weather.FeelsLikeC}℃<br />
+                    湿度: ${weather.humidity}%<br /><hr />
+                `;
+                document.getElementById("result").innerHTML += output;
+            } else {
+                document.getElementById("result").innerHTML += "天気情報の取得に失敗しました。<br /><hr />";
+            }
+
             document.apiform.reset();
         }
     </script>
